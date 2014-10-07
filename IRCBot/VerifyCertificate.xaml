@@ -1,0 +1,81 @@
+﻿<Window x:Class="IRCBot.VerifyCertificate"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:properties="clr-namespace:IRCBot.Properties"
+        Style="{StaticResource FlatWindow}"
+        Width="{Binding Path=certificateWindowWidth, Source={x:Static properties:Settings.Default}, Mode=TwoWay}"
+        Height="{Binding Path=certificateWindowHeight, Source={x:Static properties:Settings.Default}, Mode=TwoWay}"
+        Title="INVALID CERTIFICATE">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Margin="8" Text="The certificate for the target server is invalid." />
+        <ScrollViewer Grid.Row="1" Margin="8 0 0 0" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <!-- Issued to -->
+                <TextBlock Margin="8 4" Text="Issued To" FontWeight="Bold" />
+                <StackPanel Margin="12 0 0 2" Orientation="Horizontal">
+                    <TextBlock Text="Common Name (CN)" Width="130" />
+                    <TextBlock x:Name="textIssuedCN" />
+                </StackPanel>
+                <StackPanel Margin="12 0 0 2" Orientation="Horizontal">
+                    <TextBlock Text="Organization (O)" Width="130" />
+                    <TextBlock x:Name="textIssuedO" />
+                </StackPanel>
+                <StackPanel Margin="12 0 0 2" Orientation="Horizontal">
+                    <TextBlock Text="Organization Unit (OU)" Width="130" />
+                    <TextBlock x:Name="textIssuedOU" />
+                </StackPanel>
+                <StackPanel Margin="12 0 0 2" Orientation="Horizontal">
+                    <TextBlock Text="Serial Number" Width="130" />
+                    <TextBlock x:Name="textIssuedSN" />
+                </StackPanel>
+                
+                <!-- Issued by -->
+                <TextBlock Margin="8 8 8 4" Text="Issued By" FontWeight="Bold" />
+                <StackPanel Margin="12 0 0 2" Orientation="Horizontal">
+                    <TextBlock Text="Common Name (CN)" Width="130" />
+                    <TextBlock x:Name="textIssuerCN" />
+                </StackPanel>
+                <StackPanel Margin="12 0 0 2" Orientation="Horizontal">
+                    <TextBlock Text="Organization (O)" Width="130" />
+                    <TextBlock x:Name="textIssuerO" />
+                </StackPanel>
+                <StackPanel Margin="12 0 0 2" Orientation="Horizontal">
+                    <TextBlock Text="Organization Unit (OU)" Width="130" />
+                    <TextBlock x:Name="textIssuerOU" />
+                </StackPanel>
+                
+                <!-- Period Valid -->
+                <TextBlock Margin="8 8 8 4" Text="Period Of Validity" FontWeight="Bold" />
+                <StackPanel Margin="12 0 0 2" Orientation="Horizontal">
+                    <TextBlock Text="Begins On" Width="130" />
+                    <TextBlock x:Name="textValidBegins" />
+                </StackPanel>
+                <StackPanel Margin="12 0 0 2" Orientation="Horizontal">
+                    <TextBlock Text="Expires On" Width="130" />
+                    <TextBlock x:Name="textValidEnds" />
+                </StackPanel>
+
+                <!-- Fingerprints -->
+                <TextBlock Margin="8 8 8 4" Text="Fingerprints" FontWeight="Bold" />
+                <Grid Margin="12 4 0 2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="SHA1 Fingerprint" Width="130" />
+                    <TextBlock x:Name="textSha1Thumbprint" Grid.Column="1" FontFamily="Courier New" TextWrapping="Wrap" />
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
+        <CheckBox x:Name="checkboxSave" Grid.Row="2" HorizontalAlignment="Left" Margin="8" Height="16">Save My Choice</CheckBox>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="8">
+            <Button Margin="8 0" Padding="8 4" Click="buttonDisconnect_Click">Disconnect</Button>
+            <Button Padding="8 4" Click="buttonConnect_Click">Connect Anyway</Button>
+        </StackPanel>
+    </Grid>
+</Window>

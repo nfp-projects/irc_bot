@@ -4,12 +4,17 @@ using System.Net.Security;
 using System.Text;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using ChatSharp.Events;
 using System.Timers;
 using ChatSharp.Handlers;
 
 namespace ChatSharp
 {
+    public delegate bool CertificateError(object sender, X509Certificate cert,
+            X509Chain chain,
+            System.Net.Security.SslPolicyErrors errors);
+
     public partial class IrcClient
     {
         public delegate void MessageHandler(IrcClient client, IrcMessage message);
@@ -71,6 +76,7 @@ namespace ChatSharp
         public ClientSettings Settings { get; set; }
         public RequestManager RequestManager { get; set; }
         public ServerInfo ServerInfo { get; set; }
+        public event CertificateError CertificateManualValidation;
 
         public IrcClient(string serverAddress, IrcUser user, bool useSSL = false)
         {
@@ -131,7 +137,7 @@ namespace ChatSharp
             NetworkStream = new NetworkStream(Socket);
             if (UseSSL)
             {
-                NetworkStream = new SslStream(NetworkStream);
+                NetworkStream = new SslStream(NetworkStream, false, new RemoteCertificateValidationCallback( CheckCertificate));
                 ((SslStream)NetworkStream).AuthenticateAsClient(ServerHostname);
             }
 
@@ -143,6 +149,18 @@ namespace ChatSharp
             // hostname, servername are ignored by most IRC servers
             SendRawMessage("USER {0} hostname servername :{1}", User.User, User.RealName);
             PingTimer.Start();
+        }
+
+        private bool CheckCertificate(
+            object sender, X509Certificate cert,
+            X509Chain chain,
+            System.Net.Security.SslPolicyErrors errors)
+        {
+            if (errors != System.Net.Security.SslPolicyErrors.None && CertificateManualValidation != null)
+            {
+                return this.CertificateManualValidation(this, cert, chain, errors);
+            }
+            return false;
         }
 
         private void DataRecieved(IAsyncResult result)

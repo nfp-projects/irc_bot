@@ -1,29 +1,15 @@
 ﻿<Window x:Class="IRCBot.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:properties="clr-namespace:IRCBot.Properties"
         xmlns:irc="clr-namespace:IRCBot"
-        Title="IRC Bot"
-        Height="350"
-        Width="525" WindowStyle="None" Background="{StaticResource brushNormal}"  MouseDown="Window_MouseDown" MouseMove="Window_MouseMove" MouseUp="Window_MouseUp"
-        BorderBrush="{StaticResource brushFocused}"
-        BorderThickness="1px" AllowsTransparency="True" ResizeMode="CanResizeWithGrip" Icon="program.ico">
+        Title="IRC BOT"
+        Style="{StaticResource FlatWindow}"
+        Width="{Binding Path=mainWindowWidth, Source={x:Static properties:Settings.Default}, Mode=TwoWay}"
+        Height="{Binding Path=mainWindowHeight, Source={x:Static properties:Settings.Default}, Mode=TwoWay}"
+        Closing="Window_Closing"
+        Initialized="Window_Initialized">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="24" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-            <Image Width="24" Height="24" Source="icon_24px.gif" />
-            <TextBlock Margin="8 0" Text="IRC BOT" VerticalAlignment="Center" Foreground="{StaticResource brushText}" FontFamily="Calibri" FontSize="14" />
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Width="24" Height="24" Click="ButtonMinimize_Click">
-                <Path Stroke="{StaticResource brushText}" StrokeThickness="2px" Data="M 0 8 l 10 0" />
-            </Button>
-            <Button Width="24" Height="24" Click="ButtonClose_Click">
-                <Path Stroke="{StaticResource brushText}" StrokeThickness="1px" Data="M 0 0 l 9 9 M 9 0 l -9 9" />
-            </Button>
-        </StackPanel>
-        <irc:LoginPanel Grid.Row="1"></irc:LoginPanel>
+        <irc:LoginPanel x:Name="loginPanel" Connect="loginPanel_Connect" Grid.Row="1"></irc:LoginPanel>
     </Grid>
 </Window>
