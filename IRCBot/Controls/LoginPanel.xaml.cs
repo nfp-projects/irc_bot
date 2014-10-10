@@ -60,5 +60,10 @@ namespace IRCBot
                 Connect(null, null);
             }
         }
+
+        private void UserControl_Initialized(object sender, EventArgs e)
+        {
+            var temp = this.DataContext;
+        }
     }
 }

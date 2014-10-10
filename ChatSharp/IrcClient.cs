@@ -77,6 +77,7 @@ namespace ChatSharp
         public RequestManager RequestManager { get; set; }
         public ServerInfo ServerInfo { get; set; }
         public event CertificateError CertificateManualValidation;
+        public event EventHandler OnDisconnected;
 
         public IrcClient(string serverAddress, IrcUser user, bool useSSL = false)
         {
@@ -138,7 +139,18 @@ namespace ChatSharp
             if (UseSSL)
             {
                 NetworkStream = new SslStream(NetworkStream, false, new RemoteCertificateValidationCallback( CheckCertificate));
-                ((SslStream)NetworkStream).AuthenticateAsClient(ServerHostname);
+                try
+                {
+                    ((SslStream)NetworkStream).AuthenticateAsClient(ServerHostname);
+                }
+                catch (Exception e)
+                {
+                    NetworkStream.Dispose();
+                    Socket.Dispose();
+                    if (OnDisconnected != null)
+                        OnDisconnected(this, new EventArgs());
+                    return;
+                }
             }
 
             NetworkStream.BeginRead(ReadBuffer, ReadBufferIndex, ReadBuffer.Length, DataRecieved, null);

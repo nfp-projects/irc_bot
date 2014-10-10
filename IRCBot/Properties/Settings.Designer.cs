@@ -130,5 +130,17 @@ namespace IRCBot.Properties {
                 this["certificateWindowHeight"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool nickserv {
+            get {
+                return ((bool)(this["nickserv"]));
+            }
+            set {
+                this["nickserv"] = value;
+            }
+        }
     }
 }

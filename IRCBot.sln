@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IRCBot", "IRCBot\IRCBot.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ChatSharp", "ChatSharp\ChatSharp.csproj", "{4033AFFA-BEA3-4BDF-84EA-59A23360FD36}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsunaPlugin", "AsunaPlugin\AsunaPlugin.csproj", "{4256090F-07FB-42ED-A7F3-D8FDDE8C153E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{4033AFFA-BEA3-4BDF-84EA-59A23360FD36}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4033AFFA-BEA3-4BDF-84EA-59A23360FD36}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4033AFFA-BEA3-4BDF-84EA-59A23360FD36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4256090F-07FB-42ED-A7F3-D8FDDE8C153E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4256090F-07FB-42ED-A7F3-D8FDDE8C153E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4256090F-07FB-42ED-A7F3-D8FDDE8C153E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4256090F-07FB-42ED-A7F3-D8FDDE8C153E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

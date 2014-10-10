@@ -34,6 +34,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="StructureMap">
+      <HintPath>..\..\NetworkLibrary\NetworkLibrary\StructureMap.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -53,10 +56,30 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Bot\BotPlugin.cs" />
+    <Compile Include="Bot\Debug\DebugPlugin.cs" />
+    <Compile Include="Bot\Debug\DebugRegistry.cs" />
+    <Compile Include="Bot\Debug\DebugWindow.xaml.cs">
+      <DependentUpon>DebugWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Bot\IBotPlugin.cs" />
+    <Compile Include="Bot\Registry.cs" />
+    <Compile Include="Controls\Loading.xaml.cs">
+      <DependentUpon>Loading.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Converters.cs" />
     <Compile Include="VerifyCertificate.xaml.cs">
       <DependentUpon>VerifyCertificate.xaml</DependentUpon>
     </Compile>
-    <Page Include="LoginPanel.xaml">
+    <Page Include="Bot\Debug\DebugWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\Loading.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Controls\LoginPanel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -69,7 +92,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Bot\IrcClient.cs" />
-    <Compile Include="LoginPanel.xaml.cs">
+    <Compile Include="Controls\LoginPanel.xaml.cs">
       <DependentUpon>LoginPanel.xaml</DependentUpon>
     </Compile>
     <Compile Include="MainWindow.xaml.cs">
@@ -119,6 +142,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="icon_24px.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="plugins\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

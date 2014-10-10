@@ -10,6 +10,59 @@
         Closing="Window_Closing"
         Initialized="Window_Initialized">
     <Grid>
-        <irc:LoginPanel x:Name="loginPanel" Connect="loginPanel_Connect" Grid.Row="1"></irc:LoginPanel>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid x:Name="gridMain" Visibility="{Binding Path=Connected, Converter={StaticResource BoolToVisibililty}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid Margin="8 8 8 16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox Text="{Binding Path=server, Source={x:Static properties:Settings.Default}, Mode=TwoWay}" IsReadOnly="True" />
+                <Button Margin="8 0 0 0" Padding="8 2" Grid.Column="1" Click="buttonDisconnect_Click">Disconnect</Button>
+            </Grid>
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <ItemsControl x:Name="listPlugins">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <GroupBox Margin="8 12 8 0" Header="{Binding Name, Mode=OneWay}">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock x:Name="name" VerticalAlignment="Bottom" Text="{Binding Status, Mode=OneWay}" />
+                                    <ItemsControl Grid.Column="1" ItemsSource="{Binding Buttons}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Horizontal" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Tag="{Binding Path=DataContext, ElementName=name}" Margin="8 0 0 0" Padding="8 2" Click="buttonPlugin_Click" Content="{Binding}" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Grid>
+                            </GroupBox>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+        <irc:LoginPanel x:Name="loginPanel" Grid.RowSpan="3" Visibility="{Binding Path=Connected, Converter={StaticResource BoolInvertedToVisibility}}" Connect="loginPanel_Connect"></irc:LoginPanel>
+        <TextBlock x:Name="textblockStatus" Grid.Row="1" Margin="8 8 170 8" VerticalAlignment="Bottom" Text="" />
+        <StackPanel HorizontalAlignment="Right" Margin="8" Grid.Row="1"  Orientation="Horizontal">
+            <Button Padding="8 2" HorizontalAlignment="Left" Visibility="{Binding Path=Connected, Converter={StaticResource BoolToVisibililty}}" Click="buttonRefresh_Click">Refresh Plugins</Button>
+            <Button Margin="8 0 0 0" Padding="8 2" HorizontalAlignment="Right" Click="buttonClose_Click">Close</Button>
+        </StackPanel>
     </Grid>
 </Window>

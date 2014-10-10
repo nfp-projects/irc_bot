@@ -29,5 +29,8 @@
     <Setting Name="certificateWindowHeight" Type="System.Double" Scope="User">
       <Value Profile="(Default)">450</Value>
     </Setting>
+    <Setting Name="nickserv" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>
