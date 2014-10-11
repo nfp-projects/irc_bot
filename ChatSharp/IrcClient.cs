@@ -220,10 +220,13 @@ namespace ChatSharp
         {
             OnRawMessageRecieved(new RawMessageEventArgs(rawMessage, false));
             var message = new IrcMessage(rawMessage);
+            if (message.Command.ToUpper() == "PING")
+                Console.WriteLine("GOT PING");
             if (Handlers.ContainsKey(message.Command.ToUpper()))
                 Handlers[message.Command.ToUpper()](this, message);
             else
             {
+                Console.WriteLine("Command {0} no handlers", message.Command.ToUpper());
                 // TODO: Fire an event or something
             }
         }
@@ -239,13 +242,16 @@ namespace ChatSharp
             message = string.Format(message, format);
             var data = Encoding.GetBytes(message + "\r\n");
 
-            if (!IsWriting)
+            lock (WriteQueue)
             {
-                NetworkStream.BeginWrite(data, 0, data.Length, MessageSent, message);
-                IsWriting = true;
+                if (!IsWriting)
+                {
+                    NetworkStream.BeginWrite(data, 0, data.Length, MessageSent, message);
+                    IsWriting = true;
+                }
+                else
+                    WriteQueue.Enqueue(message);
             }
-            else
-                WriteQueue.Enqueue(message);
         }
 
         public void SendIrcMessage(IrcMessage message)
@@ -275,12 +281,15 @@ namespace ChatSharp
                 return;
             }
 
-            IsWriting = false;
+            lock (WriteQueue)
+            {
+                IsWriting = false;
+
+                if (WriteQueue.Count > 0)
+                    SendRawMessage(WriteQueue.Dequeue());
+            }
 
             OnRawMessageSent(new RawMessageEventArgs((string)result.AsyncState, true));
-
-            if (WriteQueue.Count > 0)
-                SendRawMessage(WriteQueue.Dequeue());
         }
 
         public event EventHandler<SocketErrorEventArgs> NetworkError;
