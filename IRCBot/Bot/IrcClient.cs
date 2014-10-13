@@ -2,13 +2,14 @@
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
+using IRCPlugin;
 using System.Text;
 using System.Threading.Tasks;
 using ChatSharp;
 
 namespace IRCBot.Bot
 {
-    public class IrcClient : INotifyPropertyChanged
+    public class IrcClient : MarshalByRefObject, INotifyPropertyChanged, IIrcClient
     {
         private bool _connected = false;
         private bool _connecting = false;

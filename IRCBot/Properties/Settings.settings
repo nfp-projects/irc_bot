@@ -32,5 +32,11 @@
     <Setting Name="nickserv" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="errorWindowWidth" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">525</Value>
+    </Setting>
+    <Setting Name="errorWindowHeight" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">350</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

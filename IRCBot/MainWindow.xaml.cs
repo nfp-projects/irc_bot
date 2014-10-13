@@ -10,7 +10,9 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Security.Cryptography;
-using StructureMap;
+using IRCPlugin;
+using IRCBot.Bot;
+using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -24,11 +26,11 @@ namespace IRCBot
     /// </summary>
     public partial class MainWindow : Window
     {
-        private bool _isMoving;
-        private Point _lastPoint;
-        private Bot.IrcClient _client;
+        private PluginManager _manager;
+        private AppDomainSetup _setup;
+        private IrcClient _client;
         private X509Store _certStorage;
-        private ObservableCollection<Bot.IBotPlugin> _plugins;
+        private ObservableCollection<Bot.PluginContainer> _plugins;
 
         public MainWindow()
         {
@@ -37,15 +39,16 @@ namespace IRCBot
 
         private void Window_Initialized(object sender, EventArgs e)
         {
-            this.DataContext = this;
-            _isMoving = false;
-            _plugins = new ObservableCollection<Bot.IBotPlugin>();
-            listPlugins.ItemsSource = _plugins;
-
+            _setup = new AppDomainSetup();
             _client = new Bot.IrcClient();
+            _setup.ApplicationBase = AppDomain.CurrentDomain.BaseDirectory;
+            _manager = new PluginManager(_setup, _client);
+
+            listPlugins.ItemsSource = _manager.Plugins;
+            this.DataContext = _client;
+
             _client.OnConnected += _client_Connected;
 
-            gridMain.DataContext = loginPanel.DataContext = _client;
             var name = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
             _certStorage = new X509Store(name, StoreLocation.CurrentUser);
             _certStorage.Open(OpenFlags.ReadWrite);
@@ -62,22 +65,23 @@ namespace IRCBot
         {
             _client.Create(Properties.Settings.Default.server, Properties.Settings.Default.nick, Properties.Settings.Default.password, int.Parse(Properties.Settings.Default.port), Properties.Settings.Default.ssl, Properties.Settings.Default.nickserv);
             _client.Client.CertificateManualValidation += Client_VerifyCertificate;
-            _client.Client.NetworkError += (s, e) => Console.WriteLine("Error: " + e.SocketError);
+            _client.Client.NetworkError += (s, e) => Console.WriteLine("{0} Error: {1}", DateTime.Now.ToShortTimeString(), e.SocketError);
             _client.Client.RawMessageRecieved += Client_RawMessageRecieved;
-            _client.Client.RawMessageSent += (s, e) => Console.WriteLine(">> {0}", e.Message);
+            _client.Client.RawMessageSent += (s, e) => Console.WriteLine("{0} >> {1}", DateTime.Now.ToShortTimeString(), e.Message);
             _client.Client.UserMessageRecieved += (s, e) =>
             {
-                Console.WriteLine("<{0}> {1}", e.PrivateMessage.User.Nick, e.PrivateMessage.Message);
+                Console.WriteLine("{0} <{1}> {2}", DateTime.Now.ToShortTimeString(), e.PrivateMessage.User.Nick, e.PrivateMessage.Message);
             };
             _client.Client.ChannelMessageRecieved += (s, e) =>
             {
-                Console.WriteLine("<{0}> {1}", e.PrivateMessage.User.Nick, e.PrivateMessage.Message);
+                Console.WriteLine("{0} <{1}> {2}", DateTime.Now.ToShortTimeString(), e.PrivateMessage.User.Nick, e.PrivateMessage.Message);
             };
             _client.Connect();
         }
 
         void Client_RawMessageRecieved(object sender, ChatSharp.Events.RawMessageEventArgs e)
         {
+            Console.WriteLine("{0} << {1}", DateTime.Now.ToShortTimeString(), e.Message);
             if (this.CheckAccess())
                 textblockStatus.Text = e.Message;
             else
@@ -134,20 +138,14 @@ namespace IRCBot
 
         private void buttonRefresh_Click(object sender, RoutedEventArgs e)
         {
-            ObjectFactory.Initialize(x =>
+            try
             {
-                x.For<Bot.IrcClient>().Singleton().Use(_client);
-                x.AddRegistry<Bot.Registry>();
-                x.AddRegistry<Bot.Debug.DebugRegistry>();
-            });
-            IList<Bot.IBotPlugin> newList = ObjectFactory.GetAllInstances<Bot.IBotPlugin>();
-
-            for (int i = 0; i < _plugins.Count; i++)
-                _plugins[i].Dispose();
-            _plugins.Clear();
-
-            for (int i = 0; i < newList.Count; i++)
-                _plugins.Add(newList[i]);
+                _manager.ReloadPlugins();
+            }
+            catch (Exception err)
+            {
+                ShowError(err, "Error while reloading plugins.");
+            }
         }
 
         private void buttonClose_Click(object sender, RoutedEventArgs e)
@@ -157,11 +155,34 @@ namespace IRCBot
 
         private void buttonPlugin_Click(object sender, RoutedEventArgs e)
         {
-            Button button = sender as Button;
-            Bot.IBotPlugin plugin = button.Tag as Bot.IBotPlugin;
-            Window w = plugin.Open(button.DataContext as string);
-            if (w != null)
-                w.ShowDialog();
+            try
+            {
+                Button button = sender as Button;
+                Bot.PluginContainer plugin = button.Tag as Bot.PluginContainer;
+                plugin.Open(button.DataContext as string);
+            }
+            catch (Exception err)
+            {
+                ShowError(err, "Error while opening window or in window");
+            }
+        }
+
+        private void buttonUnload_Click(object sender, RoutedEventArgs e)
+        {
+            _manager.UnloadPlugins();
+        }
+
+        private void buttonPluginUnload_Click(object sender, RoutedEventArgs e)
+        {
+            PluginContainer plugin = (sender as Button).DataContext as PluginContainer;
+            plugin.Dispose();
+            _manager.Plugins.Remove(plugin);
+        }
+
+        private void ShowError(Exception error, string message)
+        {
+            Error w = new Error(error, message);
+            w.Show();
         }
     }
 }

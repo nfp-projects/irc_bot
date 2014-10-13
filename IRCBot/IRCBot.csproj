@@ -34,9 +34,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="StructureMap">
-      <HintPath>..\..\NetworkLibrary\NetworkLibrary\StructureMap.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -56,30 +53,28 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Bot\BotPlugin.cs" />
-    <Compile Include="Bot\Debug\DebugPlugin.cs" />
-    <Compile Include="Bot\Debug\DebugRegistry.cs" />
-    <Compile Include="Bot\Debug\DebugWindow.xaml.cs">
-      <DependentUpon>DebugWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Bot\IBotPlugin.cs" />
-    <Compile Include="Bot\Registry.cs" />
+    <Compile Include="Bot\PluginContainer.cs" />
+    <Compile Include="Bot\PluginLoader.cs" />
     <Compile Include="Controls\Loading.xaml.cs">
       <DependentUpon>Loading.xaml</DependentUpon>
     </Compile>
     <Compile Include="Converters.cs" />
+    <Compile Include="Bot\PluginManager.cs" />
+    <Compile Include="Error.xaml.cs">
+      <DependentUpon>Error.xaml</DependentUpon>
+    </Compile>
     <Compile Include="VerifyCertificate.xaml.cs">
       <DependentUpon>VerifyCertificate.xaml</DependentUpon>
     </Compile>
-    <Page Include="Bot\Debug\DebugWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Controls\Loading.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Controls\LoginPanel.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Error.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -136,6 +131,10 @@
       <Project>{4033affa-bea3-4bdf-84ea-59a23360fd36}</Project>
       <Name>ChatSharp</Name>
     </ProjectReference>
+    <ProjectReference Include="..\IRCPlugins\IRCPlugin.csproj">
+      <Project>{021b06ef-1c5f-4c81-b109-bc26f2c8fdc5}</Project>
+      <Name>IRCPlugin</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="program.ico" />
@@ -145,6 +144,11 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="plugins\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StructureMap.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

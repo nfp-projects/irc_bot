@@ -6,7 +6,7 @@ using System.Text;
 
 namespace ChatSharp
 {
-    public partial class IrcClient
+    public partial class IrcClient : MarshalByRefObject
     {
         public void Nick(string newNick)
         {
@@ -123,6 +123,11 @@ namespace ChatSharp
                         callback(c);
                 }));
             SendRawMessage("MODE {0} {1}", channel, mode);
+        }
+
+        public override object InitializeLifetimeService()
+        {
+            return null;
         }
     }
 }

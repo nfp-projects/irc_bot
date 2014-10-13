@@ -15,7 +15,7 @@ namespace ChatSharp
             X509Chain chain,
             System.Net.Security.SslPolicyErrors errors);
 
-    public partial class IrcClient
+    public partial class IrcClient : MarshalByRefObject
     {
         public delegate void MessageHandler(IrcClient client, IrcMessage message);
         private Dictionary<string, MessageHandler> Handlers { get; set; }

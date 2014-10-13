@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using IRCBot.Bot;
+using IRCPlugin;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,8 +11,8 @@ namespace AsunaPlugin
     {
         private string _status;
 
-        public AsunaPlugin()
-            : base()
+        public AsunaPlugin(IIrcClient client)
+            : base(client)
         {
             _status = "Asuna plugin loaded";
         }
@@ -43,6 +43,14 @@ namespace AsunaPlugin
             {
                 _client.Client.SendMessage("That's me \\o/", e.PrivateMessage.Source);
             }
+        }
+
+        public override void Open(string name)
+        {
+            if (_window != null)
+                return;
+            about w = new about();
+            OpenWindow(w);
         }
     }
 }

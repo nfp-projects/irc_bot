@@ -142,5 +142,29 @@ namespace IRCBot.Properties {
                 this["nickserv"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("525")]
+        public double errorWindowWidth {
+            get {
+                return ((double)(this["errorWindowWidth"]));
+            }
+            set {
+                this["errorWindowWidth"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("350")]
+        public double errorWindowHeight {
+            get {
+                return ((double)(this["errorWindowHeight"]));
+            }
+            set {
+                this["errorWindowHeight"] = value;
+            }
+        }
     }
 }

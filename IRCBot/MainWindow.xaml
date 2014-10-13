@@ -32,36 +32,42 @@
                 <ItemsControl x:Name="listPlugins">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <GroupBox Margin="8 12 8 0" Header="{Binding Name, Mode=OneWay}">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock x:Name="name" VerticalAlignment="Bottom" Text="{Binding Status, Mode=OneWay}" />
-                                    <ItemsControl Grid.Column="1" ItemsSource="{Binding Buttons}">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <StackPanel Orientation="Horizontal" />
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Button Tag="{Binding Path=DataContext, ElementName=name}" Margin="8 0 0 0" Padding="8 2" Click="buttonPlugin_Click" Content="{Binding}" />
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </Grid>
-                            </GroupBox>
+                            <Grid>
+                                <GroupBox Margin="8 12 8 0" Header="{Binding Name, Mode=OneWay}">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock x:Name="name" VerticalAlignment="Bottom" Text="{Binding Status, Mode=OneWay}" />
+                                        <ItemsControl Grid.Column="1" ItemsSource="{Binding Buttons}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Orientation="Horizontal" />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Button Tag="{Binding Path=DataContext, ElementName=name}" Margin="8 0 0 0" Padding="8 2" Click="buttonPlugin_Click" Content="{Binding}" />
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </Grid>
+                                </GroupBox>
+                                <Button Style="{StaticResource ButtonFlat}" ToolTip="Unload this plugin" Background="Transparent" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0 4 1 0" Width="16" Height="16" Click="buttonPluginUnload_Click">
+                                    <Path Stroke="{StaticResource brushText}" StrokeThickness="1px" Data="M 0 0 l 9 9 M 9 0 l -9 9" />
+                                </Button>
+                            </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
         </Grid>
         <irc:LoginPanel x:Name="loginPanel" Grid.RowSpan="3" Visibility="{Binding Path=Connected, Converter={StaticResource BoolInvertedToVisibility}}" Connect="loginPanel_Connect"></irc:LoginPanel>
-        <TextBlock x:Name="textblockStatus" Grid.Row="1" Margin="8 8 170 8" VerticalAlignment="Bottom" Text="" />
+        <TextBlock x:Name="textblockStatus" Grid.Row="1" Margin="8 8 270 9" VerticalAlignment="Bottom" Text="" />
         <StackPanel HorizontalAlignment="Right" Margin="8" Grid.Row="1"  Orientation="Horizontal">
-            <Button Padding="8 2" HorizontalAlignment="Left" Visibility="{Binding Path=Connected, Converter={StaticResource BoolToVisibililty}}" Click="buttonRefresh_Click">Refresh Plugins</Button>
+            <Button Padding="8 2" HorizontalAlignment="Left" Visibility="{Binding Path=Connected, Converter={StaticResource BoolToVisibililty}}" Click="buttonUnload_Click">Unload Plugins</Button>
+            <Button Padding="8 2" HorizontalAlignment="Left" Visibility="{Binding Path=Connected, Converter={StaticResource BoolToVisibililty}}" Click="buttonRefresh_Click">Rescan Plugins</Button>
             <Button Margin="8 0 0 0" Padding="8 2" HorizontalAlignment="Right" Click="buttonClose_Click">Close</Button>
         </StackPanel>
     </Grid>

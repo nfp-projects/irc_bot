@@ -5,6 +5,7 @@ using System.Text;
 
 namespace ChatSharp
 {
+    [Serializable]
     public class PrivateMessage
     {
         public PrivateMessage(IrcMessage message)

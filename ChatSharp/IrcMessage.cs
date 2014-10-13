@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace ChatSharp
 {
+    [Serializable]
     public class IrcMessage
     {
         public string RawMessage { get; private set; }

@@ -1,0 +1,17 @@
+﻿<Window x:Class="IRCBot.Error"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:properties="clr-namespace:IRCBot.Properties"
+        Title="ERROR"
+        Style="{StaticResource FlatWindow}"
+        Width="{Binding Path=errorWindowWidth, Source={x:Static properties:Settings.Default}, Mode=TwoWay}"
+        Height="{Binding Path=errorWindowHeight, Source={x:Static properties:Settings.Default}, Mode=TwoWay}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="textblockErrorMessage" Margin="8" TextWrapping="Wrap" />
+        <Button Grid.Row="1" Margin="0 8 8 8" Padding="8 2" HorizontalAlignment="Center" Click="buttonClose_Click">Close</Button>
+    </Grid>
+</Window>

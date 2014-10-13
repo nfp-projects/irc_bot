@@ -6,13 +6,14 @@ using System.Windows;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace IRCBot.Bot
+namespace IRCPlugin
 {
-    public interface IBotPlugin : INotifyPropertyChanged, IDisposable
+    public interface IBotPlugin : IDisposable
     {
         string Name { get; }
         string Status { get; }
+        event PropertyChangedHandler PropertyChanged;
         IList<string> Buttons { get; }
-        Window Open(string name);
+        void Open(string name);
     }
 }

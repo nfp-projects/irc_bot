@@ -5,6 +5,7 @@ using System.Text;
 
 namespace ChatSharp.Events
 {
+    [Serializable]
     public class PrivateMessageEventArgs : EventArgs
     {
         public IrcMessage IrcMessage { get; set; }
