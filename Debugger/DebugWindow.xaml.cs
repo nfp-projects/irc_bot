@@ -87,6 +87,7 @@ namespace Debugger
             {
                 string[] split = message.Split(new char[] { ' ' }, 2);
                 _plugin.Client.Client.SendMessage(split[1], split[0]);
+                _plugin.Messages.Add(string.Format("[{0}] <{1}> {2}", split[0], _plugin.Client.Client.User.Nick, split[1]));
                 textboxMessage.Text = "";
             }
         }

@@ -33,28 +33,27 @@ namespace IRCBot
 
         private void Window_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            Window window = (sender as Border).DataContext as Window;
+            Window window = (sender as FrameworkElement).DataContext as Window;
             _isMoving = true;
-            _lastPoint = e.GetPosition(window);
-            (sender as Border).CaptureMouse();
+            _lastPoint = e.GetPosition((sender as FrameworkElement));
+            (sender as FrameworkElement).CaptureMouse();
         }
 
         private void Window_MouseMove(object sender, System.Windows.Input.MouseEventArgs e)
         {
-            if (_isMoving)
+            if (_isMoving && sender == System.Windows.Input.Mouse.Captured)
             {
-                Window window = (sender as Border).DataContext as Window;
-                Point current = window.PointToScreen(e.GetPosition(window));
-                window.Top = current.Y - this._lastPoint.Y;
-                window.Left = current.X - this._lastPoint.X;
+                Window window = (sender as FrameworkElement).DataContext as Window;
+                Point current = e.GetPosition((sender as FrameworkElement));
+                window.Top += current.Y - this._lastPoint.Y;
+                window.Left += current.X - this._lastPoint.X;
             }
         }
 
         private void Window_MouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            Window window = (sender as Border).DataContext as Window;
             _isMoving = false;
-            (sender as Border).ReleaseMouseCapture();
+            (sender as FrameworkElement).ReleaseMouseCapture();
         }
     }
 }
