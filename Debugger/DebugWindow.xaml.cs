@@ -5,8 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Reflection;
-using System.Diagnostics;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -15,23 +13,30 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace AsunaPlugin
+namespace Debugger
 {
     /// <summary>
-    /// Interaction logic for about.xaml
+    /// Interaction logic for DebugWindow.xaml
     /// </summary>
-    public partial class About : Window
+    public partial class DebugWindow : Window
     {
         private bool _isMoving;
         private Point _lastPoint;
+        private DebugPlugin _plugin;
 
-        public About()
+        public DebugWindow(DebugPlugin plugin)
         {
             InitializeComponent();
 
-            this.DataContext = FileVersionInfo.GetVersionInfo(typeof(About).Assembly.Location);
+            _plugin = plugin;
+            DataContext = _plugin;
         }
 
+        private void textboxMessage_KeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+                buttonSend_Click(null, null);
+        }
 
         #region Default
 
@@ -74,5 +79,16 @@ namespace AsunaPlugin
         }
 
         #endregion
+
+        private void buttonSend_Click(object sender, RoutedEventArgs e)
+        {
+            var message = textboxMessage.Text;
+            if (message.Length > 0 && message[0] == '#' && message.IndexOf(' ') > 2)
+            {
+                string[] split = message.Split(new char[] { ' ' }, 2);
+                _plugin.Client.Client.SendMessage(split[1], split[0]);
+                textboxMessage.Text = "";
+            }
+        }
     }
 }

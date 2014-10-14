@@ -81,6 +81,11 @@ namespace IRCPlugin
             get { throw new NotImplementedException(); }
         }
 
+        public virtual IIrcClient Client
+        {
+            get { return _client; }
+        }
+
         public virtual IList<string> Buttons
         {
             get { return new string[] { }; }
@@ -94,6 +99,13 @@ namespace IRCPlugin
         {
             _window = w;
             _window.Show();
+            _window.Closing += _window_Closing;
+        }
+
+        void _window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            _window.DataContext = null;
+            _window = null;
         }
 
         public override object InitializeLifetimeService()

@@ -13,6 +13,7 @@ namespace IRCBot.Bot
         AppDomainSetup _setup;
         IrcClient _client;
         ObservableCollection<PluginContainer> _plugins;
+        public event UnhandledExceptionEventHandler UnhandledException = (s, e) => { };
 
         public PluginManager(AppDomainSetup setup, IrcClient client)
         {
@@ -23,8 +24,6 @@ namespace IRCBot.Bot
 
         public void ReloadPlugins()
         {
-            UnloadPlugins();
-
             foreach (string file in Directory.GetFiles("plugins"))
             {
                 bool found = false;
@@ -39,8 +38,16 @@ namespace IRCBot.Bot
                 var plugin = new PluginContainer(_setup, _client, file);
                 plugin.Load();
                 if (plugin.Loaded)
+                {
+                    plugin.UnhandledException += plugin_UnhandledException;
                     _plugins.Add(plugin);
+                }
             }
+        }
+
+        void plugin_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            UnhandledException(sender, e);
         }
 
         public void UnloadPlugins()

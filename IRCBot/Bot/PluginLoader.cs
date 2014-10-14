@@ -32,8 +32,12 @@ namespace IRCBot.Bot
 
         System.Reflection.Assembly domain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
-            var assembly = Assembly.LoadFile(String.Format("{0}\\{1}", Directory.GetCurrentDirectory(), args.Name));
-            return assembly;
+            if (args.Name.EndsWith(".dll"))
+            {
+                var assembly = Assembly.LoadFile(String.Format("{0}\\{1}", Directory.GetCurrentDirectory(), args.Name));
+                return assembly;
+            }
+            return null;
         }
     }
 }

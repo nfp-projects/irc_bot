@@ -18,11 +18,15 @@ namespace IRCBot.Bot
         private IrcClient _client;
         IBotPlugin _plugin;
 
+        public event UnhandledExceptionEventHandler UnhandledException = (s, e) => { };
+        public event PropertyChangedEventHandler PropertyChanged;
+
         public PluginContainer(AppDomainSetup setup, IrcClient client, string name)
         {
             _client = client;
             var splittet = name.Split('\\');
             _domain = AppDomain.CreateDomain(splittet[splittet.Length - 1], null, setup);
+            _domain.UnhandledException += _domain_UnhandledException;
             _name = name;
         }
 
@@ -37,8 +41,6 @@ namespace IRCBot.Bot
                 _plugin.PropertyChanged += _plugin_PropertyChanged;
             }
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         public string Name
         {
@@ -65,6 +67,11 @@ namespace IRCBot.Bot
             get { return _plugin != null; }
         }
 
+        void _domain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            UnhandledException(this, e);
+        }
+
         void _plugin_PropertyChanged(object sender, PropertyChangedArgs e)
         {
             var name = e.PropertyName;
@@ -73,9 +80,21 @@ namespace IRCBot.Bot
 
         public void Dispose()
         {
-            _plugin.Dispose();
-            AppDomain.Unload(_domain);
+            if (_plugin == null)
+                return;
+
+            var temp = _plugin;
             _plugin = null;
+
+            try
+            {
+                temp.Dispose();
+            }
+            catch (Exception e)
+            {
+                UnhandledException(this, new UnhandledExceptionEventArgs(e, true));
+            }
+            AppDomain.Unload(_domain);
         }
 
         public void Open(string name)

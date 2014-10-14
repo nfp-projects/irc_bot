@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("AsunaPlugin")]
-[assembly: AssemblyDescription("Plugin for IRCBot")]
+[assembly: AssemblyTitle("Debugger")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("NFP")]
-[assembly: AssemblyProduct("AsunaPlugin")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("Debugger")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("8f8accb9-9fe5-493a-9c00-cb50b0f21a0c")]
+[assembly: Guid("177e3387-37d4-46b1-aab3-23c92c93a71f")]
 
 // Version information for an assembly consists of the following four values:
 //

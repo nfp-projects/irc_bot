@@ -49,7 +49,7 @@ namespace AsunaPlugin
         {
             if (_window != null)
                 return;
-            about w = new about();
+            About w = new About();
             OpenWindow(w);
         }
     }

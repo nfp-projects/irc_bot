@@ -43,6 +43,7 @@ namespace IRCBot
             _client = new Bot.IrcClient();
             _setup.ApplicationBase = AppDomain.CurrentDomain.BaseDirectory;
             _manager = new PluginManager(_setup, _client);
+            _manager.UnhandledException += _manager_UnhandledException;
 
             listPlugins.ItemsSource = _manager.Plugins;
             this.DataContext = _client;
@@ -177,6 +178,17 @@ namespace IRCBot
             PluginContainer plugin = (sender as Button).DataContext as PluginContainer;
             plugin.Dispose();
             _manager.Plugins.Remove(plugin);
+        }
+
+        void _manager_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            var plugin = sender as PluginContainer;
+            ShowError(e.ExceptionObject as Exception, "Problem with plugin " + plugin.Name);
+            if (e.IsTerminating)
+            {
+                plugin.Dispose();
+                _manager.Plugins.Remove(plugin);
+            }
         }
 
         private void ShowError(Exception error, string message)

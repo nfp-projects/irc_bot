@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsunaPlugin", "AsunaPlugin\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IRCPlugin", "IRCPlugins\IRCPlugin.csproj", "{021B06EF-1C5F-4C81-B109-BC26F2C8FDC5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Debugger", "Debugger\Debugger.csproj", "{5970871A-CB34-4B62-AFE2-92A46A37ED67}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{021B06EF-1C5F-4C81-B109-BC26F2C8FDC5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{021B06EF-1C5F-4C81-B109-BC26F2C8FDC5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{021B06EF-1C5F-4C81-B109-BC26F2C8FDC5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5970871A-CB34-4B62-AFE2-92A46A37ED67}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5970871A-CB34-4B62-AFE2-92A46A37ED67}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5970871A-CB34-4B62-AFE2-92A46A37ED67}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5970871A-CB34-4B62-AFE2-92A46A37ED67}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
