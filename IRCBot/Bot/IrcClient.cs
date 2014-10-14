@@ -104,5 +104,10 @@ namespace IRCBot.Bot
                 PropertyChanged(this, new PropertyChangedEventArgs("Connecting"));
             }
         }
+
+        public override object InitializeLifetimeService()
+        {
+            return null;
+        }
     }
 }

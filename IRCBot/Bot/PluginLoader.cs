@@ -39,5 +39,10 @@ namespace IRCBot.Bot
             }
             return null;
         }
+
+        public override object InitializeLifetimeService()
+        {
+            return null;
+        }
     }
 }
