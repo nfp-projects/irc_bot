@@ -21,6 +21,7 @@ namespace IRCBot.Bot
         private bool _nickserv;
         private ChatSharp.IrcClient _client;
         public event EventHandler OnConnected;
+        public event UnhandledExceptionEventHandler UnhandledException = (sender, e) => { };
         public event PropertyChangedEventHandler PropertyChanged = (sender, e) => { };
 
         public void Create(string server, string nick, string password, int port, bool ssl, bool nickserv)
@@ -38,6 +39,12 @@ namespace IRCBot.Bot
                 _client = new ChatSharp.IrcClient(String.Format("{0}:{1}", server, port), new IrcUser(nick, nick, password), ssl);
             _client.RawMessageRecieved += _client_RawMessageRecieved;
             _client.OnDisconnected += _client_OnDisconnected;
+            _client.UnhandledException += _client_UnhandledException;
+        }
+
+        void _client_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            UnhandledException(this, e);
         }
 
         void _client_RawMessageRecieved(object sender, ChatSharp.Events.RawMessageEventArgs e)
@@ -77,7 +84,6 @@ namespace IRCBot.Bot
             if (_client != null)
             {
                 Connecting = Connected = false;
-                _client.NetworkStream.Dispose();
             }
         }
 

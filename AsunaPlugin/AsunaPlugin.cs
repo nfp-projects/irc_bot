@@ -21,8 +21,8 @@ namespace AsunaPlugin
             "W-What?"
         };
         private string[] _love = new string[] {
-            "Hello :3",
-            "Yes, that's me <3",
+            "Hi <3",
+            "That's me <3",
             "<3"
         };
         private Random _random;
@@ -61,15 +61,15 @@ namespace AsunaPlugin
                 var message = "";
                 if ((new string[] {"heyman", "jakeman95"}).Contains(e.PrivateMessage.User.Nick.ToLower()))
                 {
-                    message = _mean[_random.Next(0, _mean.Length - 1)];
+                    message = _mean[_random.Next(0, _mean.Length)];
                 }
                 else if ((new string[] { "altazure", "xmythycle", "thething|24-7", "thething", "thething|phone" }).Contains(e.PrivateMessage.User.Nick.ToLower()))
                 {
-                    message = _love[_random.Next(0, _love.Length - 1)];
+                    message = _love[_random.Next(0, _love.Length)];
                 }
                 else
                 {
-                    message = _normal[_random.Next(0, _normal.Length - 1)];
+                    message = _normal[_random.Next(0, _normal.Length)];
                 }
                 _client.Client.SendMessage(message, e.PrivateMessage.Source);
             }

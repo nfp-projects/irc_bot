@@ -2,6 +2,8 @@
 using System.IO;
 using System.Net.Security;
 using System.Text;
+using System.Threading.Tasks;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Security.Cryptography.X509Certificates;
@@ -9,6 +11,7 @@ using ChatSharp.Events;
 using System.Timers;
 using ChatSharp.Handlers;
 
+#pragma warning disable 4014
 namespace ChatSharp
 {
     public delegate bool CertificateError(object sender, X509Certificate cert,
@@ -18,7 +21,70 @@ namespace ChatSharp
     public partial class IrcClient : MarshalByRefObject
     {
         public delegate void MessageHandler(IrcClient client, IrcMessage message);
+
         private Dictionary<string, MessageHandler> Handlers { get; set; }
+        private const int ReadBufferLength = 1024;
+        private byte[] ReadBuffer { get; set; }
+        private int ReadBufferIndex { get; set; }
+        private string ServerHostname { get; set; }
+        private int ServerPort { get; set; }
+        private Timer PingTimer { get; set; }
+        private ConcurrentQueue<string> WriteQueue { get; set; }
+        private bool IsWriting { get; set; }
+        private bool IsQuitting { get; set; }
+        private string PartMessage { get; set; }
+
+        internal string ServerNameFromPing { get; set; }
+
+        public Socket Socket { get; set; }
+        public Stream NetworkStream { get; set; }
+        public bool UseSSL { get; private set; }
+        public Encoding Encoding { get; set; }
+        public IrcUser User { get; set; }
+        public ChannelCollection Channels { get; private set; }
+        public ClientSettings Settings { get; set; }
+        public RequestManager RequestManager { get; set; }
+        public ServerInfo ServerInfo { get; set; }
+
+        public event CertificateError CertificateManualValidation;
+        public event UnhandledExceptionEventHandler UnhandledException = (sender, e) => { };
+        public event EventHandler OnDisconnected = (sender, e) => { };
+        public event EventHandler<UnhandledExceptionEventArgs> NetworkError = (sender, e) => { };
+        public event EventHandler<RawMessageEventArgs> RawMessageSent = (sender, e) => { };
+        public event EventHandler<RawMessageEventArgs> RawMessageRecieved = (sender, e) => { };
+        public event EventHandler<IrcNoticeEventArgs> NoticeRecieved = (sender, e) => { };
+        public event EventHandler<ServerMOTDEventArgs> MOTDPartRecieved = (sender, e) => { };
+        public event EventHandler<ServerMOTDEventArgs> MOTDRecieved = (sender, e) => { };
+        public event EventHandler<PrivateMessageEventArgs> PrivateMessageRecieved = (sender, e) => { };
+        public event EventHandler<PrivateMessageEventArgs> ChannelMessageRecieved = (sender, e) => { };
+        public event EventHandler<PrivateMessageEventArgs> UserMessageRecieved = (sender, e) => { };
+        public event EventHandler<ErronousNickEventArgs> NickInUse = (sender, e) => { };
+        public event EventHandler<ModeChangeEventArgs> ModeChanged = (sender, e) => { };
+        public event EventHandler<ChannelUserEventArgs> UserJoinedChannel = (sender, e) => { };
+        public event EventHandler<ChannelUserEventArgs> UserPartedChannel = (sender, e) => { };
+        public event EventHandler<ChannelEventArgs> ChannelListRecieved = (sender, e) => { };
+        public event EventHandler<EventArgs> ConnectionComplete = (sender, e) => { };
+        public event EventHandler<SupportsEventArgs> ServerInfoRecieved = (sender, e) => { };
+        public event EventHandler<KickEventArgs> UserKicked = (sender, e) => { };
+
+        public IrcClient(string serverAddress, IrcUser user, bool useSSL = false)
+        {
+            if (serverAddress == null) throw new ArgumentNullException("serverAddress");
+            if (user == null) throw new ArgumentNullException("user");
+
+            User = user;
+            PartMessage = "";
+            ServerAddress = serverAddress;
+            Encoding = Encoding.UTF8;
+            Channels = new ChannelCollection(this);
+            Settings = new ClientSettings();
+            Handlers = new Dictionary<string, MessageHandler>();
+            MessageHandlers.RegisterDefaultHandlers(this);
+            RequestManager = new RequestManager();
+            UseSSL = useSSL;
+            WriteQueue = new ConcurrentQueue<string>();
+        }
+
         public void SetHandler(string message, MessageHandler handler)
         {
 #if DEBUG
@@ -36,68 +102,11 @@ namespace ChatSharp
             return new DateTime(1970, 1, 1).AddSeconds(time);
         }
 
-        private const int ReadBufferLength = 1024;
-
-        private byte[] ReadBuffer { get; set; }
-        private int ReadBufferIndex { get; set; }
-        private string ServerHostname { get; set; }
-        private int ServerPort { get; set; }
-        private Timer PingTimer { get; set; }
-        private Socket Socket { get; set; }
-        private Queue<string> WriteQueue { get; set; }
-        private bool IsWriting { get; set; }
-
-        internal string ServerNameFromPing { get; set; }
-
-        public string ServerAddress
-        {
-            get
-            {
-                return ServerHostname + ":" + ServerPort;
-            }
-            internal set
-            {
-                string[] parts = value.Split(':');
-                if (parts.Length > 2 || parts.Length == 0)
-                    throw new FormatException("Server address is not in correct format ('hostname:port')");
-                ServerHostname = parts[0];
-                if (parts.Length > 1)
-                    ServerPort = int.Parse(parts[1]);
-                else
-                    ServerPort = 6667;
-            }
-        }
-
-        public Stream NetworkStream { get; set; }
-        public bool UseSSL { get; private set; }
-        public Encoding Encoding { get; set; }
-        public IrcUser User { get; set; }
-        public ChannelCollection Channels { get; private set; }
-        public ClientSettings Settings { get; set; }
-        public RequestManager RequestManager { get; set; }
-        public ServerInfo ServerInfo { get; set; }
-        public event CertificateError CertificateManualValidation;
-        public event EventHandler OnDisconnected;
-
-        public IrcClient(string serverAddress, IrcUser user, bool useSSL = false)
-        {
-            if (serverAddress == null) throw new ArgumentNullException("serverAddress");
-            if (user == null) throw new ArgumentNullException("user");
-
-            User = user;
-            ServerAddress = serverAddress;
-            Encoding = Encoding.UTF8;
-            Channels = new ChannelCollection(this);
-            Settings = new ClientSettings();
-            Handlers = new Dictionary<string, MessageHandler>();
-            MessageHandlers.RegisterDefaultHandlers(this);
-            RequestManager = new RequestManager();
-            UseSSL = useSSL;
-            WriteQueue = new Queue<string>();
-        }
-
         public void ConnectAsync()
         {
+            string temp;
+            while (WriteQueue.TryDequeue(out temp)) ;
+            IsQuitting = false;
             if (Socket != null && Socket.Connected) throw new InvalidOperationException("Socket is already connected to server.");
             Socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             ReadBuffer = new byte[ReadBufferLength];
@@ -116,17 +125,26 @@ namespace ChatSharp
             Quit(null);
         }
 
-        public void Quit(string reason)
+        public async void Quit(string reason)
         {
+            if (IsQuitting)
+                return;
+            IsQuitting = true;
+
             if (reason == null)
-                SendRawMessage("QUIT");
+                await SendRawMessage("QUIT");
             else
-                SendRawMessage("QUIT :{0}", reason);
+                await SendRawMessage("QUIT :{0}", reason);
+
             Socket.BeginDisconnect(false, ar =>
             {
                 Socket.EndDisconnect(ar);
+                NetworkStream.Close();
                 NetworkStream.Dispose();
                 NetworkStream = null;
+                Socket.Dispose();
+                if (OnDisconnected != null)
+                    OnDisconnected(this, new EventArgs());
             }, null);
             PingTimer.Dispose();
         }
@@ -143,7 +161,7 @@ namespace ChatSharp
                 {
                     ((SslStream)NetworkStream).AuthenticateAsClient(ServerHostname);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     NetworkStream.Dispose();
                     Socket.Dispose();
@@ -153,8 +171,8 @@ namespace ChatSharp
                 }
             }
 
-            NetworkStream.BeginRead(ReadBuffer, ReadBufferIndex, ReadBuffer.Length, DataRecieved, null);
-            // Write login info
+            Read();
+            
             if (!string.IsNullOrEmpty(User.Password))
                 SendRawMessage("PASS {0}", User.Password);
             SendRawMessage("NICK {0}", User.Nick);
@@ -175,45 +193,37 @@ namespace ChatSharp
             return false;
         }
 
-        private void DataRecieved(IAsyncResult result)
+        private async void Read()
         {
-            if (NetworkStream == null)
+            while (true)
             {
-                OnNetworkError(new SocketErrorEventArgs(SocketError.NotConnected));
-                return;
-            }
-
-            int length;
-            try
-            {
-                length = NetworkStream.EndRead(result) + ReadBufferIndex;
-            }
-            catch (IOException e)
-            {
-                var socketException = e.InnerException as SocketException;
-                if (socketException != null)
-                    OnNetworkError(new SocketErrorEventArgs(socketException.SocketErrorCode));
-                else
-                    throw;
-                return;
-            }
-
-            ReadBufferIndex = 0;
-            while (length > 0)
-            {
-                int messageLength = Array.IndexOf(ReadBuffer, (byte)'\n', 0, length);
-                if (messageLength == -1) // Incomplete message
+                int length = 0;
+                try
                 {
-                    ReadBufferIndex = length;
-                    break;
+                    length = await NetworkStream.ReadAsync(ReadBuffer, ReadBufferIndex, ReadBuffer.Length);
                 }
-                messageLength++;
-                var message = Encoding.GetString(ReadBuffer, 0, messageLength - 2); // -2 to remove \r\n
-                HandleMessage(message);
-                Array.Copy(ReadBuffer, messageLength, ReadBuffer, 0, length - messageLength);
-                length -= messageLength;
+                catch (Exception e)
+                {
+                    if (NetworkStream == null)
+                        return;
+                    OnNetworkError(new UnhandledExceptionEventArgs(e, true));
+                    Quit();
+                    return;
+                }
+                string message = PartMessage + Encoding.GetString(ReadBuffer, 0, length).Replace("\r", "");
+
+                while (true)
+                {
+                    if (message.IndexOf('\n') == -1)
+                    {
+                        PartMessage = message;
+                        break;
+                    }
+                    var parts = message.Split(new char[] { '\n' }, 2);
+                    HandleMessage(parts[0]);
+                    message = parts[1];
+                }
             }
-            NetworkStream.BeginRead(ReadBuffer, ReadBufferIndex, ReadBuffer.Length - ReadBufferIndex, DataRecieved, null);
         }
 
         private void HandleMessage(string rawMessage)
@@ -231,151 +241,255 @@ namespace ChatSharp
             }
         }
 
-        public void SendRawMessage(string message, params object[] format)
+        public async Task SendRawMessage(string message, params object[] format)
         {
-            if (NetworkStream == null)
-            {
-                OnNetworkError(new SocketErrorEventArgs(SocketError.NotConnected));
-                return;
-            }
-
             message = string.Format(message, format);
-            var data = Encoding.GetBytes(message + "\r\n");
 
             lock (WriteQueue)
             {
-                if (!IsWriting)
+                if (IsWriting)
                 {
-                    NetworkStream.BeginWrite(data, 0, data.Length, MessageSent, message);
-                    IsWriting = true;
-                }
-                else
                     WriteQueue.Enqueue(message);
+                    return;
+                }
+                IsWriting = true;
             }
-        }
 
-        public void SendIrcMessage(IrcMessage message)
-        {
-            SendRawMessage(message.RawMessage);
-        }
-
-        private void MessageSent(IAsyncResult result)
-        {
-            if (NetworkStream == null)
-            {
-                OnNetworkError(new SocketErrorEventArgs(SocketError.NotConnected));
-                return;
-            }
+            var data = Encoding.GetBytes(message + "\r\n");
 
             try
             {
-                NetworkStream.EndWrite(result);
+                await NetworkStream.WriteAsync(data, 0, data.Length);
             }
-            catch (IOException e)
+            catch (Exception e)
             {
-                var socketException = e.InnerException as SocketException;
-                if (socketException != null)
-                    OnNetworkError(new SocketErrorEventArgs(socketException.SocketErrorCode));
-                else
-                    throw;
+                if (NetworkStream == null)
+                    return;
+                OnNetworkError(new UnhandledExceptionEventArgs(e, true));
+                Quit();
                 return;
             }
+            
+            OnRawMessageSent(new RawMessageEventArgs(message, true));
 
             lock (WriteQueue)
             {
                 IsWriting = false;
-
-                if (WriteQueue.Count > 0)
-                    SendRawMessage(WriteQueue.Dequeue());
             }
-
-            OnRawMessageSent(new RawMessageEventArgs((string)result.AsyncState, true));
+            if (WriteQueue.TryDequeue(out message))
+                await SendRawMessage(message);
         }
 
-        public event EventHandler<SocketErrorEventArgs> NetworkError;
-        protected internal virtual void OnNetworkError(SocketErrorEventArgs e)
+        public string ServerAddress
         {
-            if (NetworkError != null) NetworkError(this, e);
+            get
+            {
+                return ServerHostname + ":" + ServerPort;
+            }
+            internal set
+            {
+                string[] parts = value.Split(':');
+                if (parts.Length > 2 || parts.Length == 0)
+                    throw new FormatException("Server address is not in correct format ('hostname:port')");
+                ServerHostname = parts[0];
+                if (parts.Length > 1)
+                    ServerPort = int.Parse(parts[1]);
+                else
+                    ServerPort = 6667;
+            }
         }
-        public event EventHandler<RawMessageEventArgs> RawMessageSent;
+
+        public async Task SendIrcMessage(IrcMessage message)
+        {
+            await SendRawMessage(message.RawMessage);
+        }
+
+        protected internal virtual void OnNetworkError(UnhandledExceptionEventArgs e)
+        {
+            try
+            {
+                NetworkError(this, e);
+            }
+            catch (Exception err)
+            {
+                UnhandledException(this, new UnhandledExceptionEventArgs(err, false));
+            }
+        }
         protected internal virtual void OnRawMessageSent(RawMessageEventArgs e)
         {
-            if (RawMessageSent != null) RawMessageSent(this, e);
+            try
+            {
+                RawMessageSent(this, e);
+            }
+            catch (Exception err)
+            {
+                UnhandledException(this, new UnhandledExceptionEventArgs(err, false));
+            }
         }
-        public event EventHandler<RawMessageEventArgs> RawMessageRecieved;
         protected internal virtual void OnRawMessageRecieved(RawMessageEventArgs e)
         {
-            if (RawMessageRecieved != null) RawMessageRecieved(this, e);
+            try
+            {
+                RawMessageRecieved(this, e);
+            }
+            catch (Exception err)
+            {
+                UnhandledException(this, new UnhandledExceptionEventArgs(err, false));
+            }
         }
-        public event EventHandler<IrcNoticeEventArgs> NoticeRecieved;
         protected internal virtual void OnNoticeRecieved(IrcNoticeEventArgs e)
         {
-            if (NoticeRecieved != null) NoticeRecieved(this, e);
+            try
+            {
+                NoticeRecieved(this, e);
+            }
+            catch (Exception err)
+            {
+                UnhandledException(this, new UnhandledExceptionEventArgs(err, false));
+            }
         }
-        public event EventHandler<ServerMOTDEventArgs> MOTDPartRecieved;
         protected internal virtual void OnMOTDPartRecieved(ServerMOTDEventArgs e)
         {
-            if (MOTDPartRecieved != null) MOTDPartRecieved(this, e);
+            try
+            {
+                MOTDPartRecieved(this, e);
+            }
+            catch (Exception err)
+            {
+                UnhandledException(this, new UnhandledExceptionEventArgs(err, false));
+            }
         }
-        public event EventHandler<ServerMOTDEventArgs> MOTDRecieved;
         protected internal virtual void OnMOTDRecieved(ServerMOTDEventArgs e)
         {
-            if (MOTDRecieved != null) MOTDRecieved(this, e);
+            try
+            {
+                MOTDRecieved(this, e);
+            }
+            catch (Exception err)
+            {
+                UnhandledException(this, new UnhandledExceptionEventArgs(err, false));
+            }
         }
-        public event EventHandler<PrivateMessageEventArgs> PrivateMessageRecieved;
         protected internal virtual void OnPrivateMessageRecieved(PrivateMessageEventArgs e)
         {
-            if (PrivateMessageRecieved != null) PrivateMessageRecieved(this, e);
+            try
+            {
+                PrivateMessageRecieved(this, e);
+            }
+            catch (Exception err)
+            {
+                UnhandledException(this, new UnhandledExceptionEventArgs(err, false));
+            }
         }
-        public event EventHandler<PrivateMessageEventArgs> ChannelMessageRecieved;
         protected internal virtual void OnChannelMessageRecieved(PrivateMessageEventArgs e)
         {
-            if (ChannelMessageRecieved != null) ChannelMessageRecieved(this, e);
+            try
+            {
+                ChannelMessageRecieved(this, e);
+            }
+            catch (Exception err)
+            {
+                UnhandledException(this, new UnhandledExceptionEventArgs(err, false));
+            }
         }
-        public event EventHandler<PrivateMessageEventArgs> UserMessageRecieved;
         protected internal virtual void OnUserMessageRecieved(PrivateMessageEventArgs e)
         {
-            if (UserMessageRecieved != null) UserMessageRecieved(this, e);
+            try
+            {
+                UserMessageRecieved(this, e);
+            }
+            catch (Exception err)
+            {
+                UnhandledException(this, new UnhandledExceptionEventArgs(err, false));
+            }
         }
-        public event EventHandler<ErronousNickEventArgs> NickInUse;
         protected internal virtual void OnNickInUse(ErronousNickEventArgs e)
         {
-            if (NickInUse != null) NickInUse(this, e);
+            try
+            {
+                NickInUse(this, e);
+            }
+            catch (Exception err)
+            {
+                UnhandledException(this, new UnhandledExceptionEventArgs(err, false));
+            }
         }
-        public event EventHandler<ModeChangeEventArgs> ModeChanged;
         protected internal virtual void OnModeChanged(ModeChangeEventArgs e)
         {
-            if (ModeChanged != null) ModeChanged(this, e);
+            try
+            {
+                ModeChanged(this, e);
+            }
+            catch (Exception err)
+            {
+                UnhandledException(this, new UnhandledExceptionEventArgs(err, false));
+            }
         }
-        public event EventHandler<ChannelUserEventArgs> UserJoinedChannel;
         protected internal virtual void OnUserJoinedChannel(ChannelUserEventArgs e)
         {
-            if (UserJoinedChannel != null) UserJoinedChannel(this, e);
+            try
+            {
+                UserJoinedChannel(this, e);
+            }
+            catch (Exception err)
+            {
+                UnhandledException(this, new UnhandledExceptionEventArgs(err, false));
+            }
         }
-        public event EventHandler<ChannelUserEventArgs> UserPartedChannel;
         protected internal virtual void OnUserPartedChannel(ChannelUserEventArgs e)
         {
-            if (UserPartedChannel != null) UserPartedChannel(this, e);
+            try
+            {
+                UserPartedChannel(this, e);
+            }
+            catch (Exception err)
+            {
+                UnhandledException(this, new UnhandledExceptionEventArgs(err, false));
+            }
         }
-        public event EventHandler<ChannelEventArgs> ChannelListRecieved;
         protected internal virtual void OnChannelListRecieved(ChannelEventArgs e)
         {
-            if (ChannelListRecieved != null) ChannelListRecieved(this, e);
+            try
+            {
+                ChannelListRecieved(this, e);
+            }
+            catch (Exception err)
+            {
+                UnhandledException(this, new UnhandledExceptionEventArgs(err, false));
+            }
         }
-        public event EventHandler<EventArgs> ConnectionComplete;
         protected internal virtual void OnConnectionComplete(EventArgs e)
         {
-            if (ConnectionComplete != null) ConnectionComplete(this, e);
+            try
+            {
+                ConnectionComplete(this, e);
+            }
+            catch (Exception err)
+            {
+                UnhandledException(this, new UnhandledExceptionEventArgs(err, false));
+            }
         }
-        public event EventHandler<SupportsEventArgs> ServerInfoRecieved;
         protected internal virtual void OnServerInfoRecieved(SupportsEventArgs e)
         {
-            if (ServerInfoRecieved != null) ServerInfoRecieved(this, e);
+            try
+            {
+                ServerInfoRecieved(this, e);
+            }
+            catch (Exception err)
+            {
+                UnhandledException(this, new UnhandledExceptionEventArgs(err, false));
+            }
         }
-        public event EventHandler<KickEventArgs> UserKicked;
         protected internal virtual void OnUserKicked(KickEventArgs e)
         {
-            if (UserKicked != null) UserKicked(this, e);
+            try
+            {
+                UserKicked(this, e);
+            }
+            catch (Exception err)
+            {
+                UnhandledException(this, new UnhandledExceptionEventArgs(err, false));
+            }
         }
     }
 }

@@ -11,6 +11,7 @@ namespace ChatSharp.Handlers
         public static void RegisterDefaultHandlers(IrcClient client)
         {
             // General
+            client.SetHandler("ERROR", HandleError);
             client.SetHandler("PING", HandlePing);
             client.SetHandler("NOTICE", HandleNotice);
             client.SetHandler("PRIVMSG", HandlePrivmsg);
@@ -54,6 +55,14 @@ namespace ChatSharp.Handlers
             // Server handlers
             client.SetHandler("004", ServerHandlers.HandleMyInfo);
             client.SetHandler("005", ServerHandlers.HandleISupport);
+        }
+
+        public static void HandleError(IrcClient client, IrcMessage message)
+        {
+            if (message.RawMessage.IndexOf("Closing Link") > 0)
+            {
+                client.Quit();
+            }
         }
 
         public static void HandlePing(IrcClient client, IrcMessage message)

@@ -91,5 +91,11 @@ namespace Debugger
                 textboxMessage.Text = "";
             }
         }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            this.DataContext = null;
+            
+        }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -30,6 +31,7 @@ namespace IRCBot
         private AppDomainSetup _setup;
         private IrcClient _client;
         private X509Store _certStorage;
+        private bool reconnect = false;
         private ObservableCollection<Bot.PluginContainer> _plugins;
 
         public MainWindow()
@@ -49,6 +51,7 @@ namespace IRCBot
             this.DataContext = _client;
 
             _client.OnConnected += _client_Connected;
+            _client.UnhandledException += _client_UnhandledException;
 
             var name = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
             _certStorage = new X509Store(name, StoreLocation.CurrentUser);
@@ -66,7 +69,7 @@ namespace IRCBot
         {
             _client.Create(Properties.Settings.Default.server, Properties.Settings.Default.nick, Properties.Settings.Default.password, int.Parse(Properties.Settings.Default.port), Properties.Settings.Default.ssl, Properties.Settings.Default.nickserv);
             _client.Client.CertificateManualValidation += Client_VerifyCertificate;
-            _client.Client.NetworkError += (s, e) => Console.WriteLine("{0} Error: {1}", DateTime.Now.ToShortTimeString(), e.SocketError);
+            _client.Client.NetworkError += Client_NetworkError;
             _client.Client.RawMessageRecieved += Client_RawMessageRecieved;
             _client.Client.RawMessageSent += (s, e) => Console.WriteLine("{0} >> {1}", DateTime.Now.ToShortTimeString(), e.Message);
             _client.Client.UserMessageRecieved += (s, e) =>
@@ -80,13 +83,38 @@ namespace IRCBot
             _client.Connect();
         }
 
+        void Client_NetworkError(object sender, UnhandledExceptionEventArgs e)
+        {
+            if (reconnect)
+                return;
+
+            reconnect = true;
+
+            this.Dispatcher.Invoke(async () =>
+            {
+                await Task.Delay(1000);
+                string message = string.Format("{0} Error: {1}", DateTime.Now.ToShortTimeString(), (e.ExceptionObject as Exception).Message);
+
+                if (e.IsTerminating)
+                    message += " Reconnecting...";
+                else
+                    message += " Not reconnecting.";
+                textblockStatus.Text = message;
+
+                await Task.Delay(9000);
+
+                reconnect = false;
+                if (e.IsTerminating)
+                    this._client.Connect();
+            });
+        }
+
         void Client_RawMessageRecieved(object sender, ChatSharp.Events.RawMessageEventArgs e)
         {
-            Console.WriteLine("{0} << {1}", DateTime.Now.ToShortTimeString(), e.Message);
-            if (this.CheckAccess())
+            this.Dispatcher.Invoke(() => {
+                Console.WriteLine("{0} << {1}", DateTime.Now.ToShortTimeString(), e.Message);
                 textblockStatus.Text = e.Message;
-            else
-                this.Dispatcher.Invoke(() => { textblockStatus.Text = e.Message; });
+            });
         }
 
         void _client_Connected(object sender, EventArgs e)
@@ -135,6 +163,11 @@ namespace IRCBot
         private void buttonDisconnect_Click(object sender, RoutedEventArgs e)
         {
             _client.Disconnect();
+        }
+
+        void _client_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            ShowError(e.ExceptionObject as Exception, "Unknown error in client");
         }
 
         private void buttonRefresh_Click(object sender, RoutedEventArgs e)
