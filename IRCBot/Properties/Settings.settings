@@ -38,5 +38,11 @@
     <Setting Name="errorWindowHeight" Type="System.Double" Scope="User">
       <Value Profile="(Default)">350</Value>
     </Setting>
+    <Setting Name="autoconnect" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="channels" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

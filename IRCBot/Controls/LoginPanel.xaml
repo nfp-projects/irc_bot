@@ -44,9 +44,20 @@
                     <TextBox x:Name="textboxPassword" Grid.Column="1" Text="{Binding Path=password, Source={x:Static properties:Settings.Default}, Mode=TwoWay}" />
                     <CheckBox Margin="8 0 0 0" Grid.Column="2" VerticalAlignment="Center" Height="16" IsChecked="{Binding Path=nickserv, Source={x:Static properties:Settings.Default}, Mode=TwoWay}">Use NickServ</CheckBox>
                 </Grid>
-                <Button Visibility="{Binding Path=DataContext.Connecting, ElementName=loginPanel, Converter={StaticResource BoolInvertedToVisibility}}" Margin="0 16 0 0" Height="24" Width="100" HorizontalAlignment="Center" Click="Button_Click">
-                    Connect
-                </Button>
+                <Grid Margin="0 8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="70" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock VerticalAlignment="Center" Text="Channels:" />
+                    <TextBox x:Name="textboxChannels" Grid.Column="1" Text="{Binding Path=channels, Source={x:Static properties:Settings.Default}, Mode=TwoWay}" />
+                </Grid>
+                <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Margin="0 16 0 0" >
+                    <CheckBox Height="16" Margin="0 0 8 0" IsChecked="{Binding Path=autoconnect, Source={x:Static properties:Settings.Default}, Mode=TwoWay}">Autoconnect on Startup</CheckBox>
+                    <Button Height="24" Width="100" HorizontalAlignment="Center" Click="Button_Click" Visibility="{Binding Path=DataContext.Connecting, ElementName=loginPanel, Converter={StaticResource BoolInvertedToVisibility}}">
+                        Connect
+                    </Button>
+                </StackPanel >
                 <irc:Loading Visibility="{Binding Path=DataContext.Connecting, ElementName=loginPanel, Converter={StaticResource BoolToVisibililty}}" Margin="0 16 0 0" ContentText="Connecting" />
             </StackPanel>
         </GroupBox>

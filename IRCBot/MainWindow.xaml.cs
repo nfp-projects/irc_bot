@@ -119,8 +119,11 @@ namespace IRCBot
 
         void _client_Connected(object sender, EventArgs e)
         {
-            _client.Client.Channels.Join("#nfp");
-            _client.Client.Channels.Join("#nfp-staff");
+            var channels = Properties.Settings.Default.channels.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < channels.Length; i++)
+            {
+                _client.Client.Channels.Join(channels[i]);
+            }
             if (this.CheckAccess())
                 buttonRefresh_Click(null, null);
             else

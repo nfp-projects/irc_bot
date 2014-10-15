@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -54,6 +55,11 @@ namespace IRCBot
                 errorAnimation.Begin(textboxNick, textboxNick.Template);
                 valid = false;
             }
+            if (textboxChannels.Text == "")
+            {
+                errorAnimation.Begin(textboxNick, textboxNick.Template);
+                valid = false;
+            }
 
             if (valid && Connect != null)
             {
@@ -61,9 +67,15 @@ namespace IRCBot
             }
         }
 
-        private void UserControl_Initialized(object sender, EventArgs e)
+        private async void UserControl_Initialized(object sender, EventArgs e)
         {
             var temp = this.DataContext;
+
+            if (Properties.Settings.Default.autoconnect)
+            {
+                await Task.Delay(1000);
+                Button_Click(null, null);
+            }
         }
     }
 }

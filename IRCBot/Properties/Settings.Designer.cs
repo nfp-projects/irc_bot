@@ -166,5 +166,29 @@ namespace IRCBot.Properties {
                 this["errorWindowHeight"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool autoconnect {
+            get {
+                return ((bool)(this["autoconnect"]));
+            }
+            set {
+                this["autoconnect"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string channels {
+            get {
+                return ((string)(this["channels"]));
+            }
+            set {
+                this["channels"] = value;
+            }
+        }
     }
 }
