@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -31,6 +32,7 @@ namespace IRCBot
         private AppDomainSetup _setup;
         private IrcClient _client;
         private X509Store _certStorage;
+        private ObservableCollection<string> _debug;
         private bool reconnect = false;
 
         public MainWindow()
@@ -42,6 +44,10 @@ namespace IRCBot
         {
             _setup = new AppDomainSetup();
             _client = new Bot.IrcClient();
+            _debug = new ObservableCollection<string>();
+
+
+            Console.SetOut(new ControlWriter(_debug, this.Dispatcher));
             _setup.ApplicationBase = AppDomain.CurrentDomain.BaseDirectory;
             _manager = new PluginManager(_setup, _client);
             _manager.UnhandledException += _manager_UnhandledException;
@@ -55,6 +61,8 @@ namespace IRCBot
             var name = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
             _certStorage = new X509Store(name, StoreLocation.CurrentUser);
             _certStorage.Open(OpenFlags.ReadWrite);
+
+            Console.WriteLine("Loaded");
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -186,7 +194,8 @@ namespace IRCBot
 
         private void buttonClose_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            Console.WriteLine("Test");
+            //this.Close();
         }
 
         private void buttonPlugin_Click(object sender, RoutedEventArgs e)
@@ -211,6 +220,10 @@ namespace IRCBot
         private void buttonPluginUnload_Click(object sender, RoutedEventArgs e)
         {
             PluginContainer plugin = (sender as Button).DataContext as PluginContainer;
+            for (int i = 0; i < _client.Client.Channels.Count; i++)
+            {
+                _client.Client.SendMessage(string.Format("§ Plugin {0} Unloaded §", plugin.Name), _client.Client.Channels[i].Name);
+            }
             plugin.Dispose();
             _manager.Plugins.Remove(plugin);
         }
@@ -234,6 +247,12 @@ namespace IRCBot
         private void ShowError(Exception error, string message)
         {
             Error w = new Error(error, message);
+            w.Show();
+        }
+
+        private void buttonDebug_Click(object sender, RoutedEventArgs e)
+        {
+            DebugWindow w = new DebugWindow(_client, _debug);
             w.Show();
         }
     }

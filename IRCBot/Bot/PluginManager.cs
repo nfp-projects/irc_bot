@@ -52,6 +52,10 @@ namespace IRCBot.Bot
 
                 if (plugin.Loaded)
                 {
+                    for (int i = 0; i < _client.Client.Channels.Count; i++)
+                    {
+                        _client.Client.SendMessage(string.Format("§ Plugin {0} Loaded §", plugin.Name), _client.Client.Channels[i].Name);
+                    }
                     plugin.UnhandledException += plugin_UnhandledException;
                     _plugins.Add(plugin);
                 }
@@ -67,6 +71,10 @@ namespace IRCBot.Bot
         {
             for (int i = 0; i < _plugins.Count; i++)
             {
+                for (int a = 0; a < _client.Client.Channels.Count; a++)
+                {
+                    _client.Client.SendMessage(string.Format("§ Plugin {0} Unloaded §", _plugins[i].Name), _client.Client.Channels[a].Name);
+                }
                 _plugins[i].Dispose();
             }
             _plugins.Clear();

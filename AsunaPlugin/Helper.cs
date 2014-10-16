@@ -10,15 +10,18 @@ namespace AsunaPlugin
     {
         public static string[] greetings = new string[] {
             "o/",
+            "\\o",
             "hello",
             "hi",
             "\\o/",
-            "yo"
+            "yo",
+            "but",
+            ":3"
         };
 
         public static bool IsMatch(string message, string action)
         {
-            var split = message.Split(' ');
+            var split = message.Replace(",", "").Replace(".", "").Replace("!", "").Replace("?", "").Split(' ');
             if (action == "hello")
             {
                 if (split.Length == 1)

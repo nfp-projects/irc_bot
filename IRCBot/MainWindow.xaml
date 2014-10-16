@@ -64,7 +64,10 @@
             </ScrollViewer>
         </Grid>
         <irc:LoginPanel x:Name="loginPanel" Grid.RowSpan="3" Visibility="{Binding Path=Connected, Converter={StaticResource BoolInvertedToVisibility}}" Connect="loginPanel_Connect"></irc:LoginPanel>
-        <TextBlock x:Name="textblockStatus" Grid.Row="1" Margin="8 8 270 9" VerticalAlignment="Bottom" Text="" />
+        <Button RenderOptions.EdgeMode="Aliased" Style="{StaticResource ButtonFlat}" Grid.Row="1" Margin="8 0 0 0" HorizontalAlignment="Left" Width="24" Height="24" Click="buttonDebug_Click">
+            <Path SnapsToDevicePixels="True" Stroke="{StaticResource brushControlActiveBorder}" StrokeThickness="1px" Data="M 0 0 l 13 0 M 0 3 l 9 0 M 0 6 l 13 0 M 0 9 l 9 0 M 0 12 l 13 0" />
+        </Button>
+        <TextBlock x:Name="textblockStatus" Grid.Row="1" Margin="32 8 270 9" VerticalAlignment="Bottom" Text="" />
         <StackPanel HorizontalAlignment="Right" Margin="8" Grid.Row="1"  Orientation="Horizontal">
             <Button Padding="8 2" HorizontalAlignment="Left" Visibility="{Binding Path=Connected, Converter={StaticResource BoolToVisibililty}}" Click="buttonUnload_Click">Unload Plugins</Button>
             <Button Padding="8 2" HorizontalAlignment="Left" Visibility="{Binding Path=Connected, Converter={StaticResource BoolToVisibililty}}" Click="buttonRefresh_Click">Rescan Plugins</Button>

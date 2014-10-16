@@ -39,6 +39,14 @@ namespace ChatSharp
             return Channels.Any(c => c.Name == name);
         }
 
+        public int Count
+        {
+            get
+            {
+                return Channels.Count;
+            }
+        }
+
         public IrcChannel this[int index]
         {
             get

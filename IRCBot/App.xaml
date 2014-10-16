@@ -315,9 +315,7 @@
                             <Border.Background>
                                 <SolidColorBrush x:Name="borderBackgroundBrush" Color="Transparent" />
                             </Border.Background>
-                            <TextBlock TextAlignment="Center" VerticalAlignment="Center" Foreground="#D3D3D3">
-                                <ContentPresenter></ContentPresenter>
-                            </TextBlock>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"></ContentPresenter>
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup>
                                     <VisualState x:Name="Normal" />
