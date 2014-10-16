@@ -57,6 +57,8 @@ namespace IRCBot
                 _dispatcher.Invoke(() =>
                 {
                     _list.Add(_buffer.Remove(index).Replace("\r", ""));
+                    if (_list.Count > 50)
+                        _list.RemoveAt(0);
                 });
                 _buffer = _buffer.Remove(0, index + 1);
             }

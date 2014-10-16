@@ -230,13 +230,10 @@ namespace ChatSharp
         {
             OnRawMessageRecieved(new RawMessageEventArgs(rawMessage, false));
             var message = new IrcMessage(rawMessage);
-            if (message.Command.ToUpper() == "PING")
-                Console.WriteLine("GOT PING");
             if (Handlers.ContainsKey(message.Command.ToUpper()))
                 Handlers[message.Command.ToUpper()](this, message);
             else
             {
-                Console.WriteLine("Command {0} no handlers", message.Command.ToUpper());
                 // TODO: Fire an event or something
             }
         }
