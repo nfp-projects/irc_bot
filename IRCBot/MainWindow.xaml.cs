@@ -32,7 +32,6 @@ namespace IRCBot
         private IrcClient _client;
         private X509Store _certStorage;
         private bool reconnect = false;
-        private ObservableCollection<Bot.PluginContainer> _plugins;
 
         public MainWindow()
         {
@@ -219,7 +218,12 @@ namespace IRCBot
         void _manager_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             var plugin = sender as PluginContainer;
-            ShowError(e.ExceptionObject as Exception, "Problem with plugin " + plugin.Name);
+            var message = "";
+            if (sender is PluginManager)
+                message = "Problem in Plugin Manager";
+            else
+                message = "Problem with plugin " + plugin.Name;
+            ShowError(e.ExceptionObject as Exception, message);
             if (e.IsTerminating)
             {
                 plugin.Dispose();
