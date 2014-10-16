@@ -26,6 +26,9 @@ namespace IRCBot.Bot
         {
             foreach (string file in Directory.GetFiles("plugins"))
             {
+                if (!file.EndsWith(".dll"))
+                    continue;
+
                 bool found = false;
                 for (int i = 0; i < _plugins.Count; i++)
                 {
@@ -35,8 +38,18 @@ namespace IRCBot.Bot
                 if (found)
                     continue;
 
-                var plugin = new PluginContainer(_setup, _client, file);
-                plugin.Load();
+                PluginContainer plugin;
+                try
+                {
+                    plugin = new PluginContainer(_setup, _client, file);
+                    plugin.Load();
+                }
+                catch (Exception e)
+                {
+                    plugin_UnhandledException(this, new UnhandledExceptionEventArgs(e, false));
+                    continue;
+                }
+
                 if (plugin.Loaded)
                 {
                     plugin.UnhandledException += plugin_UnhandledException;
