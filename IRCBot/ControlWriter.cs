@@ -49,19 +49,26 @@ namespace IRCBot
             Check();
         }
 
-        private void Check()
+        private async void Check()
         {
-            int index = _buffer.IndexOf('\n');
-            if (index > 0)
+            await Task.Run(() =>
             {
-                _dispatcher.Invoke(() =>
+                lock (_list)
                 {
-                    _list.Add(_buffer.Remove(index).Replace("\r", ""));
-                    if (_list.Count > 50)
-                        _list.RemoveAt(0);
-                });
-                _buffer = _buffer.Remove(0, index + 1);
-            }
+                    int index = _buffer.IndexOf('\n');
+                    if (index > 0)
+                    {
+                        _dispatcher.Invoke(() =>
+                        {
+                            _list.Add(_buffer.Remove(index).Replace("\r", ""));
+                            if (_list.Count > 50)
+                                _list.RemoveAt(0);
+                        });
+                        _buffer = _buffer.Remove(0, index + 1);
+                    }
+                }
+            });
+            
         }
 
         public override Encoding Encoding
