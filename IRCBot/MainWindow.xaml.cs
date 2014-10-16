@@ -165,7 +165,7 @@ namespace IRCBot
 
         private void buttonDisconnect_Click(object sender, RoutedEventArgs e)
         {
-            _client.Disconnect();
+            _client.Client.Quit();
         }
 
         void _client_UnhandledException(object sender, UnhandledExceptionEventArgs e)
