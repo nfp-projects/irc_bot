@@ -10,8 +10,8 @@ namespace IRCPlugin
 {
     public interface IBotPlugin : IDisposable
     {
-        string Name { get; }
-        string Status { get; }
+        string Name { get; set; }
+        string Status { get; set; }
         event PropertyChangedHandler PropertyChanged;
         IList<string> Buttons { get; }
         void Open(string name);

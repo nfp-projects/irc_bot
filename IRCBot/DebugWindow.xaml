@@ -12,6 +12,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
+        
 
         <ScrollViewer x:Name="scroller" VerticalScrollBarVisibility="Auto">
             <ItemsControl x:Name="itemsList" Margin="8">
@@ -22,8 +23,38 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
-        <TextBox x:Name="textboxMessage" Grid.Row="1" Margin="8 8 173 8" KeyUp="textboxMessage_KeyUp" />
-        <Button Margin="8 8 140 8" Grid.Row="1" Click="buttonSend_Click" HorizontalAlignment="Right" Padding="2 2">Send</Button>
+        <TextBox x:Name="textboxMessage" Grid.Row="1" Margin="8 8 203 8" KeyUp="textboxMessage_KeyUp" />
+        <Button Margin="8 8 170 8" Grid.Row="1" Click="buttonSend_Click" HorizontalAlignment="Right" Padding="2 2">Send</Button>
+        <Button Margin="8 8 140 8" Grid.Row="1" Click="buttonHelp_Click" HorizontalAlignment="Right" Padding="2 2">Help</Button>
         <Button Margin="8" Grid.Row="1" Click="ButtonClose_Click" HorizontalAlignment="Right" Padding="40 2">Close</Button>
+        <Border x:Name="panelHelp" Visibility="Collapsed" Grid.RowSpan="2" BorderBrush="{StaticResource brushFocused}" BorderThickness="1" Background="{StaticResource brushNormal}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Margin="3" Text="Help" TextAlignment="Center" />
+                <ScrollViewer Grid.Row="1" Margin="0 3 0 0" VerticalScrollBarVisibility="Auto">
+                    <TextBlock Margin="3">
+                        The following commands are supported:<LineBreak />
+                        <LineBreak />
+                        &lt;message&gt;<LineBreak />
+                        Sends &lt;message&gt; to all channels.<LineBreak />
+                        <LineBreak />
+                        #channel &lt;message&gt;<LineBreak />
+                        Sends &lt;message&gt; to specified channel.<LineBreak />
+                        <LineBreak />
+                        In addition, the following commands are supported:<LineBreak />
+                        /msg &lt;nick/channel&gt; &lt;message&gt;<LineBreak />
+                        /nick &lt;nick&gt;<LineBreak />
+                        /join &lt;channel&gt;<LineBreak />
+                        /part &lt;channel&gt;<LineBreak />
+                    </TextBlock>
+                </ScrollViewer>
+                
+                <Button Grid.Row="2" Margin="3" HorizontalAlignment="Center" Padding="20 0" Click="buttonPanelClose_Click">Close</Button>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

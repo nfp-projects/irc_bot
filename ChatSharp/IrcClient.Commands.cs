@@ -35,15 +35,22 @@ namespace ChatSharp
         public void PartChannel(string channel)
         {
             if (!Channels.Contains(channel))
-                throw new InvalidOperationException("Client is not present in channel.");
+            {
+                OnRawMessageRecieved(new Events.RawMessageEventArgs(string.Format("{0} You're not on that channel", channel), false));
+                return;
+            }
+
             SendRawMessage("PART {0}", channel);
             Channels.Remove(Channels[channel]);
         }
 
         public void PartChannel(string channel, string reason)
         {
-            if (!Channels.Contains(channel))
-                throw new InvalidOperationException("Client is not present in channel.");
+            if (Channels.Contains(channel))
+            {
+                OnRawMessageRecieved(new Events.RawMessageEventArgs(string.Format("{0} You're not on that channel", channel), false));
+                return;
+            }
             SendRawMessage("PART {0} :{1}", channel, reason);
             Channels.Remove(Channels[channel]);
         }
@@ -51,14 +58,20 @@ namespace ChatSharp
         public void JoinChannel(string channel)
         {
             if (Channels.Contains(channel))
-                throw new InvalidOperationException("Client is not already present in channel.");
+            {
+                OnRawMessageRecieved(new Events.RawMessageEventArgs(string.Format("{0} You're already on that channel", channel), false));
+                return;
+            }
             SendRawMessage("JOIN {0}", channel);
         }
 
         public void SetTopic(string channel, string topic)
         {
             if (!Channels.Contains(channel))
-                throw new InvalidOperationException("Client is not present in channel.");
+            {
+                OnRawMessageRecieved(new Events.RawMessageEventArgs(string.Format("{0} You're not on that channel", channel), false));
+                return;
+            }
             SendRawMessage("TOPIC {0} :{1}", channel, topic);
         }
 

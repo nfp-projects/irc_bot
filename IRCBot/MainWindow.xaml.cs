@@ -194,8 +194,7 @@ namespace IRCBot
 
         private void buttonClose_Click(object sender, RoutedEventArgs e)
         {
-            Console.WriteLine("Test");
-            //this.Close();
+            this.Close();
         }
 
         private void buttonPlugin_Click(object sender, RoutedEventArgs e)
@@ -246,8 +245,11 @@ namespace IRCBot
 
         private void ShowError(Exception error, string message)
         {
-            Error w = new Error(error, message);
-            w.Show();
+            Dispatcher.Invoke(() =>
+            {
+                Error w = new Error(error, message);
+                w.Show();
+            });
         }
 
         private void buttonDebug_Click(object sender, RoutedEventArgs e)

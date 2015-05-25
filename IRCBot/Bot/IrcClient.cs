@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Linq;
 using IRCPlugin;
+using IRCBot.Bot.Database;
 using System.Text;
 using System.Threading.Tasks;
 using ChatSharp;
@@ -23,6 +24,10 @@ namespace IRCBot.Bot
         public event EventHandler OnConnected;
         public event UnhandledExceptionEventHandler UnhandledException = (sender, e) => { };
         public event PropertyChangedEventHandler PropertyChanged = (sender, e) => { };
+
+        public IrcClient()
+        {
+        }
 
         public void Create(string server, string nick, string password, int port, bool ssl, bool nickserv)
         {
@@ -60,7 +65,7 @@ namespace IRCBot.Bot
                 else
                     _client.SendMessage("identify " + _password, "NickServ");
             }
-            else if (e.Message[0] == ':' && e.Message.Contains(String.Format("MODE {0} :+r", _nick)))
+            else if (e.Message[0] == ':' && (e.Message.Contains(String.Format("MODE {0} :+r", _nick)) || e.Message.Contains(":Your nick isn't registered.")))
             {
                 Connected = true;
                 Connecting = false;

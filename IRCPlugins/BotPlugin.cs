@@ -13,10 +13,14 @@ namespace IRCPlugin
         protected bool _disposed = false;
         protected IIrcClient _client;
         protected Window _window;
+        private string _name;
+        private string _status;
 
         public BotPlugin(IIrcClient client)
         {
             _client = client;
+            _name = "Unknown Plugin";
+            _status = "Loaded";
 
             if (_client != null && _client.Client != null)
             {
@@ -27,25 +31,25 @@ namespace IRCPlugin
 
         void Client_ChannelMessageRecieved(object sender, ChatSharp.Events.PrivateMessageEventArgs e)
         {
-            this.MessageRecieved(sender, e);
-            this.ChannelMessageRecieved(sender, e);
+            this.MessageReceived(sender, e);
+            this.ChannelMessageReceived(sender, e);
         }
 
         void Client_UserMessageRecieved(object sender, ChatSharp.Events.PrivateMessageEventArgs e)
         {
-            this.MessageRecieved(sender, e);
-            this.PrivateMessageRecieved(sender, e);
+            this.MessageReceived(sender, e);
+            this.PrivateMessageReceived(sender, e);
         }
 
-        protected virtual void ChannelMessageRecieved(object sender, ChatSharp.Events.PrivateMessageEventArgs e)
+        protected virtual void ChannelMessageReceived(object sender, ChatSharp.Events.PrivateMessageEventArgs e)
         {
         }
 
-        protected virtual void PrivateMessageRecieved(object sender, ChatSharp.Events.PrivateMessageEventArgs e)
+        protected virtual void PrivateMessageReceived(object sender, ChatSharp.Events.PrivateMessageEventArgs e)
         {
         }
 
-        protected virtual void MessageRecieved(object sender, ChatSharp.Events.PrivateMessageEventArgs e)
+        protected virtual void MessageReceived(object sender, ChatSharp.Events.PrivateMessageEventArgs e)
         {
         }
 
@@ -56,7 +60,7 @@ namespace IRCPlugin
 
         public event PropertyChangedHandler PropertyChanged = (s, e) => { };
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             if (_client != null && _client.Client != null)
             {
@@ -73,12 +77,22 @@ namespace IRCPlugin
 
         public virtual string Name
         {
-            get { throw new NotImplementedException(); }
+            get { return _name; }
+            set
+            {
+                _name = value;
+                SendPropertyChanged("Name");
+            }
         }
 
         public virtual string Status
         {
-            get { throw new NotImplementedException(); }
+            get { return _status; }
+            set
+            {
+                _status = value;
+                SendPropertyChanged("Status");
+            }
         }
 
         public virtual IIrcClient Client

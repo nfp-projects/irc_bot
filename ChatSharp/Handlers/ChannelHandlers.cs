@@ -27,7 +27,11 @@ namespace ChatSharp.Handlers
         public static void HandlePart(IrcClient client, IrcMessage message)
         {
             if (client.User.Match(message.Prefix)) // We've parted this channel
+            {
+                if (client.Channels.FirstOrDefault(c => c.Name == message.Parameters[0]) == null) //Check if we've already left
+                    return;
                 client.Channels.Remove(client.Channels[message.Parameters[0]]);
+            }
             else // Someone has parted a channel we're already in
             {
                 var user = new IrcUser(message.Prefix).Nick;
