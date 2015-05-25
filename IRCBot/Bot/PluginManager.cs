@@ -52,9 +52,12 @@ namespace IRCBot.Bot
 
                 if (plugin.Loaded)
                 {
-                    for (int i = 0; i < _client.Client.Channels.Count; i++)
+                    if (_client != null && _client.Client != null)
                     {
-                        _client.Client.SendMessage(string.Format("§ Plugin {0} Loaded §", plugin.Name), _client.Client.Channels[i].Name);
+                        for (int i = 0; i < _client.Client.Channels.Count; i++)
+                        {
+                            _client.Client.SendMessage(string.Format("§ Plugin {0} Loaded §", plugin.Name), _client.Client.Channels[i].Name);
+                        }
                     }
                     plugin.UnhandledException += plugin_UnhandledException;
                     _plugins.Add(plugin);

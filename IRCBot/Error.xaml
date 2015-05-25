@@ -11,7 +11,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <TextBlock x:Name="textblockErrorMessage" Margin="8" TextWrapping="Wrap" />
+        <TextBox x:Name="textblockErrorMessage" Margin="8" TextWrapping="Wrap" />
         <Button Grid.Row="1" Margin="0 8 8 8" Padding="8 2" HorizontalAlignment="Center" Click="buttonClose_Click">Close</Button>
     </Grid>
 </Window>

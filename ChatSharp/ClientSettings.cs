@@ -5,6 +5,7 @@ using System.Text;
 
 namespace ChatSharp
 {
+    [Serializable]
     public class ClientSettings
     {
         public ClientSettings()

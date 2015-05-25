@@ -59,8 +59,8 @@ namespace IRCPlugin.DB
                 cache.Values = string.Join(", ", others.Select(k => string.Format("@{0}", k.Name)));
                 if (cache.Primary != null)
                 {
-                    cache.ValuesWithId = string.Format("COALESCE((SELECT {0} FROM {1} WHERE {0} = @{0}), @{0}),", cache.Primary.Name, typeof(T).Name) + cache.Values;
-                    cache.Values = string.Format("(SELECT {0} FROM {1} WHERE {0} = @{0}),", cache.Primary.Name, typeof(T).Name) + cache.Values;
+                    cache.ValuesWithId = string.Format("COALESCE((SELECT [{0}] FROM [{1}] WHERE [{0}] = @{0}), @{0}),", cache.Primary.Name, typeof(T).Name) + cache.Values;
+                    cache.Values = string.Format("(SELECT [{0}] FROM [{1}] WHERE [{0}] = @{0}),", cache.Primary.Name, typeof(T).Name) + cache.Values;
                 }
 
                 _mapCache.Add(typeof(T), cache);
@@ -75,8 +75,8 @@ namespace IRCPlugin.DB
             var others = _cache.Properties.Where(p => p != _cache.Primary );
             var columns = GetDelimitedSafeColumnList(", ", others);
             if (_cache.Primary != null)
-                columns = string.Join(", ", GetColumn(_cache.Primary) + " NOT NULL", columns, string.Format("PRIMARY KEY({0})", _cache.Primary.Name));
-            _database.Connection.Execute(string.Format("CREATE TABLE IF NOT EXISTS {0} ({1})", tableName, columns));
+                columns = string.Join(", ", GetColumn(_cache.Primary) + " NOT NULL", columns, string.Format("PRIMARY KEY([{0}])", _cache.Primary.Name));
+            _database.Connection.Execute(string.Format("CREATE TABLE IF NOT EXISTS [{0}] ({1})", tableName, columns));
             return this;
         }
 
@@ -85,7 +85,7 @@ namespace IRCPlugin.DB
             if (_cache.Primary == null)
                 throw new NullReferenceException("Cannot query by id of a non-primary key object.");
 
-            var result = _database.Connection.Query<T>(string.Format("select * from {0} where {1} = @Id", typeof(T).Name, _cache.Primary.Name), new
+            var result = _database.Connection.Query<T>(string.Format("select * from [{0}] where [{1}] = @Id", typeof(T).Name, _cache.Primary.Name), new
             {
                 Id = id
             }).SingleOrDefault();
@@ -100,10 +100,11 @@ namespace IRCPlugin.DB
         public IEnumerable<T> Select(dynamic query)
         {
             var properties = (IEnumerable<PropertyInfo>)query.GetType().GetProperties();
-            string where = string.Join(", ", properties.Select(k => string.Format("{0} = @{0}", k.Name)));
+            string where = string.Join(", ", properties.Select(k => string.Format("[{0}] = @{0}", k.Name)));
             if (!string.IsNullOrEmpty(where))
                 where = " WHERE " + where;
-            var result = _database.Connection.Query<T>(string.Format("select * from {0}" + where, typeof(T).Name, _cache.Primary.Name), (object)query);
+            var result = _database.Connection.Query<T>(string.Format("select * from [{0}]" + where, typeof(T).Name, _cache.Primary.Name), (object)query);
+
             return result;
         }
 
@@ -142,7 +143,7 @@ namespace IRCPlugin.DB
             string type = "";
             if (!_typeMap.TryGetValue(info.PropertyType.FullName, out type))
                 type = "BLOB";
-            return string.Format("{0} {1}", info.Name, type);
+            return string.Format("[{0}] {1}", info.Name, type);
         }
     }
 }

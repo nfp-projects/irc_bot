@@ -14,6 +14,11 @@ namespace ChatSharp
             User.Nick = newNick;
         }
 
+        public void SendMessageRaw(string message, params string[] format)
+        {
+            SendRawMessage(message, format);
+        }
+
         public void SendMessage(string message, params string[] destinations)
         {
             const string illegalCharacters = "\r\n\0";

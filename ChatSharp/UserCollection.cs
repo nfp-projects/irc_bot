@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace ChatSharp
 {
+    [Serializable]
     public class UserCollection : IEnumerable<IrcUser>
     {
         internal UserCollection()

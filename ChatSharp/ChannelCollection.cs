@@ -6,6 +6,7 @@ using System.Text;
 
 namespace ChatSharp
 {
+    [Serializable]
     public class ChannelCollection : IEnumerable<IrcChannel>
     {
         internal ChannelCollection(IrcClient client)

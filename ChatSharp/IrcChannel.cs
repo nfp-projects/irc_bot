@@ -5,6 +5,7 @@ using System.Text;
 
 namespace ChatSharp
 {
+    [Serializable]
     public class IrcChannel
     {
         private IrcClient Client { get; set; }
